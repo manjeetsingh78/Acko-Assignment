@@ -5,16 +5,40 @@ include:
   - pulse-starter-kit/docker-compose.yml
 
 services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: pulse
+      POSTGRES_PASSWORD: pulse          # demo-only credential, local network only
+      POSTGRES_DB: pulse
+    ports: ["5433:5432"]                # D19: host 5433, because a local Postgres may already use 5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data # R11: history survives restarts
+      - ./db/init:/docker-entrypoint-initdb.d:ro   # creates the pulse_test database on first start
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pulse -d pulse"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
   pulse:
     build: .
     ports: ["8000:8000"]
     environment:
-      PULSE_DB_PATH: /data/pulse.db
+      PULSE_DATABASE_URL: postgresql+psycopg://pulse:pulse@db:5432/pulse
       PULSE_WEBHOOK_URL: http://webhook-receiver:9000/pulse
       PULSE_SEED_URL_TEMPLATE: http://{name}:8080/health
-    volumes:
-      - pulse-data:/data          # D2: history survives restarts
-    depends_on: [quotes, payments, claims, notifications, webhook-receiver]
+      # Demo-only operator login and cookie-signing secret. Override them in any real deployment.
+      PULSE_OPERATOR_USERNAME: ${PULSE_OPERATOR_USERNAME:-operator}
+      PULSE_OPERATOR_PASSWORD: ${PULSE_OPERATOR_PASSWORD:-pulse-demo}
+      PULSE_SESSION_SECRET: ${PULSE_SESSION_SECRET:-local-demo-secret-change-me}
+    depends_on:
+      db: { condition: service_healthy }
+      quotes: { condition: service_started }
+      payments: { condition: service_started }
+      claims: { condition: service_started }
+      notifications: { condition: service_started }
+      webhook-receiver: { condition: service_started }
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz')"]
       interval: 10s
@@ -22,4 +46,4 @@ services:
       retries: 3
 
 volumes:
-  pulse-data:
+  pgdata:

@@ -5,3 +5,6 @@ pulse-starter-kit
 **/__pycache__
 .pytest_cache
 .venv
+.claude
+tests
+*.md
