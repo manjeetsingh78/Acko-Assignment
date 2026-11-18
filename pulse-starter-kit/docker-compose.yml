@@ -1,0 +1,23 @@
+# Pulse starter kit: 4 mock services and a webhook receiver.
+# Start:  docker compose up --build
+services:
+  quotes:
+    build: ./mock-service
+    environment: { SERVICE_NAME: quotes, PORT: "8080" }
+    ports: ["7001:8080"]
+  payments:
+    build: ./mock-service
+    environment: { SERVICE_NAME: payments, PORT: "8080" }
+    ports: ["7002:8080"]
+  claims:
+    build: ./mock-service
+    environment: { SERVICE_NAME: claims, PORT: "8080" }
+    ports: ["7003:8080"]
+  notifications:
+    build: ./mock-service
+    environment: { SERVICE_NAME: notifications, PORT: "8080" }
+    ports: ["7004:8080"]
+  webhook-receiver:
+    build: ./webhook-receiver
+    environment: { PORT: "9000" }
+    ports: ["${WEBHOOK_PORT:-9900}:9000"]  # host port: 9900 by default, override with WEBHOOK_PORT
