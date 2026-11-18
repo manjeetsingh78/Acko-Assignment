@@ -1,0 +1,25 @@
+# One command starts everything:  docker compose up --build
+# The starter kit is included as-is (never edited); Pulse joins the same network
+# so it reaches services by name, e.g. http://claims:8080/health.
+include:
+  - pulse-starter-kit/docker-compose.yml
+
+services:
+  pulse:
+    build: .
+    ports: ["8000:8000"]
+    environment:
+      PULSE_DB_PATH: /data/pulse.db
+      PULSE_WEBHOOK_URL: http://webhook-receiver:9000/pulse
+      PULSE_SEED_URL_TEMPLATE: http://{name}:8080/health
+    volumes:
+      - pulse-data:/data          # D2: history survives restarts
+    depends_on: [quotes, payments, claims, notifications, webhook-receiver]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz')"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+volumes:
+  pulse-data:

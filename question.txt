@@ -1,0 +1,13 @@
+Area	              |   Question to ask
+Health checks         |   How frequently should Pulse check each service?
+Timeouts	          |   What timeout should classify a service as slow or unhealthy?
+Failure detection  	Should one failed check create an incident, or should multiple consecutive failures be required?
+Recovery	How many successful checks should be required before resolving an incident?
+Degraded state	What conditions should classify a service as degraded rather than down?
+Incidents	Can multiple incidents remain open for the same service?
+Notifications	What exact payload and endpoint does the webhook receiver expect?
+Public status	Should customers see detailed error messages or only service status?
+Reliability	What observation window should be used to calculate availability?
+Priorities	Which features matter most if I cannot complete everything in six hours?
+Data	Should historical health-check data survive application restarts?
+Users	Is authentication required for the operator dashboard?
